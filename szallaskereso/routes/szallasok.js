@@ -50,7 +50,8 @@ app.get("/szallasok", async (req, res) => {
 app.get("/szallasok/:id", async (req, res) => {
     let id = req.params.id;
     let sql = "SELECT szallasok.*, varosok.nev varos, varosok.orszag FROM szallasok JOIN varosok ON szallasok.varos_id = varosok.id WHERE szallasok.id = ?";
-    const eredmeny = await db.query(sql, [id]);
+    const [eredmeny] = await db.query(sql, [id]);
+    
     let szallas = eredmeny[0];
 
     res.json({

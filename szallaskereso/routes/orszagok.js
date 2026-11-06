@@ -6,7 +6,7 @@ const app = express.Router();
 app.get("/orszagok", async (req, res) => {
     let sql = "SELECT varosok.orszag, COUNT(DISTINCT varosok.id) varosDb, COUNT(szallasok.id) szallasDb, ROUND(AVG(szallasok.ertekeles), 2) atlagErtekeles FROM varosok LEFT JOIN szallasok ON varosok.id = szallasok.varos_id GROUP BY varosok.orszag ORDER BY varosok.orszag ASC";
 
-    const eredmeny = await db.query(sql)
+    const [eredmeny] = await db.query(sql)
 
     let orszagok = eredmeny.map(orszag => ({
         orszag: orszag.orszag,
