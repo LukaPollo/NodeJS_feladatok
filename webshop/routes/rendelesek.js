@@ -1,12 +1,12 @@
+
 import express from "express";
 import db from "../data/db.js"
 const route = express.Router();
 
-
 route.get("/", async (req, res) => {
     const { statusz, tol, ig } = req.query;
 
-    let base = "SELECT rendelesek.id, rendelesek.datum, rendelesek.statusz, vasarlok.nev FROM rendelesek JOIN vasarlok ON rendelesek.vasarlo_id = vasarlok.id";
+    let base = "";
 
     let adat = [];
     let params = [];
@@ -34,16 +34,13 @@ route.get("/", async (req, res) => {
     res.json(eredmeny);
 });
 
-
-
 route.get("/:id", async (req, res) => {
     const { id } = req.params;
 
-    const base = "SELECT * FROM rendelesek WHERE id = ?";
+    const base = "";
     const [eredmeny] = await db.query(base, [id]);
 
     res.json(eredmeny);
 });
-
 
 export default route;

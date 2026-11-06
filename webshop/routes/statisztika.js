@@ -1,10 +1,11 @@
+
 import express from "express";
 import db from "../data/db.js";
 
 const route = express.Router();
 
 route.get("/havi", async (req, res) => {
-    let base = "SELECT DATE_FORMAT(rendelesek.datum, '%Y-%m') AS honap, COUNT(DISTINCT rendelesek.id) AS rendelesDb, COALESCE(SUM(tetelek.db * tetelek.egysegar), 0) AS bevetel FROM rendelesek JOIN tetelek ON rendelesek.id = tetelek.rendeles_id GROUP BY honap ORDER BY honap";
+    let base = "SELECT DATE_FORMAT(rendelesek.datum, '%Y-%m') AS honap, COUNT(DISTINCT rendelesek.id) AS rendelesDb, SUM(tetelek.db * tetelek.egysegar) AS bevetel FROM rendelesek JOIN tetelek ON rendelesek.id = tetelek.rendeles_id GROUP BY honap ORDER BY honap";
 })
 
 route.get("/top-termekek/", async (req, res) => {

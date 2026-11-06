@@ -23,19 +23,18 @@ app.get("/eloadok/:id", async (req, res) => {
     res.json(eredmeny);
 });
 
-//            SQL ERROR JAVITANDO
 app.get("/albumok", async (req, res) => {
-    let params = []; // sql WHERE filter array
-    let adat = [];   // inputted filter array
+    let params = [];
+    let adat = [];
     let base = "SELECT * FROM albumok";
-    // szűkítő feltételek vizsgálata és az ennek megfelelő sql utasítás elkészítése
+
     const {mufaj, tol, ig} = req.query;
+
     if (mufaj || tol || ig) {
-        // vannak szűkitő feltétele
         if (mufaj) {
             let mufajsql = "mufaj = ?";
-            params.push(mufajsql); // sql where push
-            adat.push(mufaj);      // inputted filter push
+            params.push(mufajsql);
+            adat.push(mufaj);
         }
         if (tol) {
             let datumsql = "ev >= ?";
@@ -47,16 +46,18 @@ app.get("/albumok", async (req, res) => {
             params.push(datumsql);
             adat.push(ig);
         }
-        base += base + " WHERE " + params.join(" AND ") 
-        let [eredmeny] = await db.query(base, adat) // base = sql, adat = input
-        res.json(eredmeny);
-    } 
-    else {
-        let sql = "SELECT * FROM albumok";
-        let eredmeny = await db.query(sql);
+
+        base += " WHERE " + params.join(" AND ");
+
+        let [eredmeny] = await db.query(base, adat);
         res.json(eredmeny);
     }
-});
+    else {
+        let sql = "SELECT * FROM albumok";
+        let [eredmeny] = await db.query(sql);
+        res.json(eredmeny);
+    }
+}); 
 
 
 app.get("/albumok/kereses", async (req, res) => {
