@@ -4,16 +4,66 @@ import db from "../data/db.js";
 const route = express.Router();
 
 route.get("/", async (req, res) => {
-    let base = "SELECT * FROM vasarlok";
-    const [eredmeny] = await db.query(base);
+    const { nap, vanHely } = req.query;
+
+    let base = "SELECT szakkorok.id, szakkorok.nev, szakkorok.tanar, szakkorok.nap, szakkorok.max_letszam AS maxLetszam, COUNT(jelentkezesek.diak_id) AS jelentkezett, szakkorok.max_letszam - COUNT(jelentkezesek.diak_id) AS szabadHely FROM szakkorok LEFT JOIN jelentkezesek ON szakkorok.id = jelentkezesek.szakkor_id";
+
+    let params = [];
+    let adat = [];
+
+    if (nap) {
+        params.push("szakkorok.nap = ?");
+        adat.push(nap);
+    }
+
+    if (params.length > 0) {
+        base += " WHERE " + params.join(" AND ");
+    }
+
+    base += " GROUP BY szakkorok.id";
+
+    if (vanHely === "true" || vanHely === "igaz") {
+        base += " HAVING szabadHely > 0";
+    }
+
+    base += " ORDER BY FIELD(szakkorok.nap,'hétfő','kedd','szerda','csütörtök','péntek'), szakkorok.nev";
+
+    const [eredmeny] = await db.query(base, adat);
     res.json(eredmeny);
-})
+});
 
-route.get("/:id/rendelesek", async (req,res) => {
-    const {id} = req.params;
-    let base = "SELECT COUNT(rendelesek.vasarlo_id) AS rendelesekDB FROM vasarlok JOIN rendelesek ON vasarlok.id = rendelesek.vasarlo_id WHERE rendelesek.vasarlo_id = ?;";
+route.get("/:id", async (req, res) => {
+    const { id } = req.params;
+
+    let base = "SELECT szakkorok.id, szakkorok.nev, szakkorok.tanar, szakkorok.nap, szakkorok.max_letszam AS maxLetszam, diakok.id AS diakId, diakok.nev AS diakNev, diakok.osztaly, jelentkezesek.datum FROM szakkorok LEFT JOIN jelentkezesek ON szakkorok.id = jelentkezesek.szakkor_id LEFT JOIN diakok ON diakok.id = jelentkezesek.diak_id WHERE szakkorok.id = ? ORDER BY diakok.nev";
+
     const [eredmeny] = await db.query(base, [id]);
-    res.json(eredmeny)
-})
 
-export default route
+    if (eredmeny.length === 0) {
+        return res.status(404).json({ hiba: "Nincs ilyen szakkör" });
+    }
+
+    let szakkor = {
+        id: eredmeny[0].id,
+        nev: eredmeny[0].nev,
+        tanar: eredmeny[0].tanar,
+        nap: eredmeny[0].nap,
+        maxLetszam: eredmeny[0].maxLetszam,
+        diakok: []
+    };
+
+    eredmeny.forEach(adat => {
+        if (adat.diakId) {
+            szakkor.diakok.push({
+                id: adat.diakId,
+                nev: adat.diakNev,
+                osztaly: adat.osztaly,
+                jelentkezett: adat.datum
+            });
+        }
+    });
+
+    res.json(szakkor);
+});
+
+export default route;
