@@ -36,7 +36,7 @@ route.get("/", async (req, res) => {
 route.get("/:id", async (req, res) => {
     const { id } = req.params;
 
-    let base = "SELECT szakkorok.id, szakkorok.nev, szakkorok.tanar, szakkorok.nap, szakkorok.max_letszam AS maxLetszam, diakok.id AS diakId, diakok.nev AS diakNev, diakok.osztaly, jelentkezesek.datum FROM szakkorok LEFT JOIN jelentkezesek ON szakkorok.id = jelentkezesek.szakkor_id LEFT JOIN diakok ON diakok.id = jelentkezesek.diak_id WHERE szakkorok.id = ? ORDER BY diakok.nev";
+    let base = "SELECT szakkorok.id, szakkorok.nev, szakkorok.tanar, szakkorok.nap, szakkorok.max_letszam, diakok.id, diakok.nev, diakok.osztaly, jelentkezesek.datum FROM szakkorok JOIN jelentkezesek ON szakkorok.id = jelentkezesek.szakkor_id JOIN diakok ON diakok.id = jelentkezesek.diak_id WHERE szakkorok.id = ? ORDER BY diakok.nev";
 
     const [eredmeny] = await db.query(base, [id]);
 
