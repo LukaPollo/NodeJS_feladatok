@@ -6,29 +6,26 @@ const route = express.Router();
 route.get("/", async (req, res) => {
     const { statusz, tol, ig } = req.query;
 
-    let base = "";
+    let base = "SELECT rendelesek.id, rendelesek.datum, rendelesek.statusz, vasarlok.nev AS vasarlo, SUM(tetelek.db) AS darab, SUM(tetelek.db * tetelek.egysegar) AS vegosszeg FROM rendelesek JOIN vasarlok ON rendelesek.vasarlo_id = vasarlok.id JOIN tetelek ON rendelesek.id = tetelek.rendeles_id";
 
     let adat = [];
-    let params = [];
 
-    if (statusz) {
-        params.push("rendelesek.statusz = ?");
-        adat.push(statusz);
+    if (req.query.statusz) {
+        base += " WHERE rendelesek.statusz = ?";
+        adat.push(req.query.statusz);
     }
 
-    if (tol) {
-        params.push("rendelesek.datum >= ?");
-        adat.push(tol);
+    if (req.query.tol) {
+        base += adat.length ? " AND rendelesek.datum >= ?" : " WHERE rendelesek.datum >= ?";
+        adat.push(req.query.tol);
     }
 
-    if (ig) {
-        params.push("rendelesek.datum <= ?");
-        adat.push(ig);
+    if (req.query.ig) {
+        base += adat.length ? " AND rendelesek.datum <= ?" : " WHERE rendelesek.datum <= ?";
+        adat.push(req.query.ig);
     }
 
-    if (params.length > 0) {
-        base += " WHERE " + params.join(" AND ");
-    }
+    base += " GROUP BY rendelesek.id ORDER BY rendelesek.datum";
 
     const [eredmeny] = await db.query(base, adat);
     res.json(eredmeny);
@@ -37,7 +34,7 @@ route.get("/", async (req, res) => {
 route.get("/:id", async (req, res) => {
     const { id } = req.params;
 
-    const base = "";
+    const base = "SELECT rendelesek.id, rendelesek.datum, rendelesek.statusz, vasarlok.id, vasarlok.nev, vasarlok.email, vasarlok.varos, termekek.nev, tetelek.db, tetelek.egysegar, tetelek.db * tetelek.egysegar AS osszeg FROM rendelesek JOIN vasarlok ON rendelesek.vasarlo_id = vasarlok.id JOIN tetelek ON rendelesek.id = tetelek.rendeles_id JOIN termekek ON tetelek.termek_id = termekek.id WHERE rendelesek.id = ?;";
     const [eredmeny] = await db.query(base, [id]);
 
     res.json(eredmeny);
