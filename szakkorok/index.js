@@ -6,6 +6,7 @@ import diakokRoute from "./routes/diakok.js";
 import utkozesekRoute from "./routes/utkozesek.js";
 
 const app = express();
+app.use(express.json());
 
 app.use("/szakkorok", szakkorokRoute);
 app.use("/diakok", diakokRoute);

@@ -5,8 +5,8 @@ import allatokRoute from "./route/allatok.js";
 import kezelesekRoute from "./route/kezelesek.js";
 import statisticsRoute from "./route/statisztika.js";
 
-
 const app = express();
+app.use(express.json())
 
 app.use("/gazdak", gazdakRoute);
 app.use("/allatok", allatokRoute);
