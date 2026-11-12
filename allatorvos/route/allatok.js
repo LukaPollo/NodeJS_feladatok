@@ -16,7 +16,7 @@ router.get("/", async (req,res) => {
     res.json(eredmeny);
 })
 
-router.get("/kezelesnelkul", async (req, res) => {
+router.get("/kezeles-nelkul", async (req, res) => {
     let base = "SELECT allatok.id, allatok.nev, allatok.faj, gazdak.nev AS gazda FROM allatok JOIN gazdak ON allatok.gazda_id = gazdak.id JOIN kezelesek ON allatok.id = kezelesek.allat_id WHERE kezelesek.id IS NULL ORDER BY allatok.nev;";
 
     const [eredmeny] = await db.query(base);
@@ -24,10 +24,17 @@ router.get("/kezelesnelkul", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-    let base = "SELECT * FROM allatok WHERE allatok.id = ?";
+    const id = req.params.id;
+    const base = "SELECT * FROM allatok WHERE allatok.id = ?";
 
-    const [eredmeny] = await db.query(base, [req.params.id]);
-    res.json(eredmeny);
+    const [eredmeny] = await db.query(base, [id]);
+
+    if (eredmeny.length === 0) {
+        return res.status(404).json({ error: "Az állat nem található" });
+    }
+
+    res.json(eredmeny[0]); 
 });
+
 
 export default router

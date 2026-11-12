@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
     const { varos } = req.query;
     
-    let base = "SELECT gazdak.id, gazdak.nev, gazdak.varos, COUNT(allatok.id) AS allatDb FROM gazdak JOIN allatok ON gazdak.id = allatok.gazda_id";
+    let base = "SELECT gazdak.id, gazdak.nev, gazdak.varos, COUNT(allatok.id) AS allatDb FROM gazdak LEFT JOIN allatok ON gazdak.id = allatok.gazda_id";
     let adat = [];
 
     if (varos) {
