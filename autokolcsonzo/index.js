@@ -6,6 +6,8 @@ import statisztikaRoute from "./routes/statisztika.js";
 
 const app = express();
 
+app.use(express.json());
+
 app.use("/autok", autokRoute);
 app.use("/ugyfelek", ugyfelekRoute);
 app.use("/statisztika", statisztikaRoute);
