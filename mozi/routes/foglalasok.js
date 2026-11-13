@@ -1,8 +1,8 @@
+
 import express from "express";
 import db from "../utils/db.js";
 
 const router = express.Router();
-
 
 router.post("/", async (req,res) => {
     const {vetitesId, nev, sor, szek} = req.body;
@@ -10,6 +10,7 @@ router.post("/", async (req,res) => {
     try {
         let sql = "SELECT vetitesek.id, filmek.cim AS film, termek.nev AS terem, DATE_FORMAT(vetitesek.kezdes, '%Y-%m-%d %H:%i') AS kezdes, vetitesek.jegyar, termek.sorok, termek.szekek FROM vetitesek JOIN filmek ON vetitesek.film_id = filmek.id JOIN termek ON vetitesek.terem_id = termek.id WHERE vetitesek.id = ?";
         const [vetites] = await db.query(sql, [vetitesId]);
+
         if (vetites.length === 0) {
             return res.status(404).json({hiba: "Nincs ilyen vetites"});
         }
@@ -48,10 +49,29 @@ router.post("/", async (req,res) => {
         console.error(error);
         res.status(500).json({ hiba: "Hiba tortent a foglalas rogzitese soran." });
     }
-})
+});
 
 router.delete("/:id", async (req,res) => {
-    //
-})
+    try{
+        const id = Number(req.params.id);
 
-export default router
+        if(isNaN(id)){
+            return res.status(400).json({ hiba: "szamokat kell irni pls" });
+        }
+
+        let sql = "DELETE FROM foglalasok WHERE id = ?";
+        const [eredmeny] = await db.query(sql, [id]);
+
+        if(eredmeny.affectedRows === 0){
+            return res.status(404).json({hiba: " nincs ilyen foglalas 404"});
+        }
+
+        res.status(204).send();
+    }
+    catch (error){
+        console.log(error);
+        res.status(500).json({hiba: "szerver hiba 500"});
+    }
+});
+
+export default router;
