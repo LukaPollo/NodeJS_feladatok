@@ -31,9 +31,6 @@ router.get("/", async (req, res) => {
 
 router.get("/szabad", async (req,res) => {
     const {tol, ig} = req.query;
-    if(!tol || !ig || isNaN(Date.parse(tol)) || isNaN(Date.parse(ig)) || new Date(tol).toISOString().slice(0,10) !== tol || new Date(ig).toISOString().slice(0,10) !== ig || ig < tol){
-        return res.status(400).json({hiba: "hianyzo vagy hibas datum"});
-    }
     try{
         let base = "SELECT * FROM autok WHERE NOT EXISTS (SELECT 1 FROM berlesek WHERE berlesek.auto_id = autok.id AND berlesek.kezdet <= ? AND berlesek.veg >= ?) ORDER BY autok.napidij ASC";
         const [eredmeny] = await db.query(base, [ig, tol]);
@@ -50,12 +47,30 @@ router.get("/:id", async (req,res) =>{
         return res.status(400).json({hiba: "szamot kene megadni idkent 400"})
     }
     try{
-        let sql = "SELECT * from autok WHERE id = ?"; // Ill write it another time
-        const[eredmeny] = await db.query(sql, [id]);
+        let sql = "SELECT * FROM autok WHERE id = ?";
+        const [eredmeny] = await db.query(sql, [id]);
         if(eredmeny.length === 0){
-            return res.status(404).json({hiba: "Nincs ilyen auto 404"});
+            return res.status(404).json({hiba: " ninncs ilyen auto 404"});
         }
-        res.json(eredmeny);
+        let sql2 = "SELECT berlesek.id, ugyfelek.nev AS ugyfel, berlesek.kezdet, berlesek.veg, DATEDIFF(berlesek.veg, berlesek.kezdet) + 1 AS napok, (DATEDIFF(berlesek.veg, berlesek.kezdet) + 1) * autok.napidij AS dij FROM berlesek JOIN ugyfelek ON berlesek.ugyfel_id = ugyfelek.id JOIN autok ON berlesek.auto_id = autok.id WHERE berlesek.auto_id = ? ORDER BY berlesek.kezdet ASC";
+        const [berlesek] = await db.query(sql2, [id]);
+        
+        let osszBevetel = 0;
+
+        for (let i = 0; i < berlesek.length; i++) {
+            osszBevetel += Number(berlesek[i].dij);
+        }
+
+        res.json({
+        id: eredmeny[0].id,
+        rendszam: eredmeny[0].rendszam,
+        marka: eredmeny[0].marka,
+        modell: eredmeny[0].modell,
+        kategoria: eredmeny[0].kategoria,
+        napidij: Number(eredmeny[0].napidij),
+        berlesek: berlesek,
+        osszBevetel: osszBevetel
+        });
     }
     catch(error){
         res.status(500).json({ hiba: " szerver error 500 " });

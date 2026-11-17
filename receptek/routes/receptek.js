@@ -26,7 +26,8 @@ router.get("/kereses", async (req,res) => {
         let hozzavalok = req.query.van.split(",");
         let sql = "SELECT receptek.id, receptek.nev, receptek.kategoria FROM receptek JOIN recept_hozzavalok ON receptek.id = recept_hozzavalok.recept_id JOIN hozzavalok ON recept_hozzavalok.hozzavalo_id = hozzavalok.id WHERE hozzavalok.nev IN (?) GROUP BY receptek.id HAVING COUNT(DISTINCT hozzavalok.id) = ?";
         const [eredmeny] = await db.query(sql, [hozzavalok, hozzavalok.length]);
-        res.json(eredmeny);
+        let vegered = eredmeny.map(a => a.nev).join(", ")
+        res.send(vegered);
     }
     catch(error) {
         res.status(500).json({ hiba: "szerver error 500" });
@@ -126,7 +127,7 @@ router.delete("/:id/hozzavalok/:hozzavaloId", async (req,res) => {
         const hozzavaloId = Number(req.params.hozzavaloId);
 
         if (isNaN(id) || isNaN(hozzavaloId)) {
-            return res.status(400).json({ hiba: " szamokat kell irni pls " });
+            return res.status(400).json({ hiba: " szamokat kell irni " });
         }
 
         let sql = "DELETE FROM recept_hozzavalok WHERE recept_id = ? AND hozzavalo_id = ?";

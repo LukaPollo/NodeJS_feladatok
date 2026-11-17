@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/havi", async (req,res) => {
     try{
-        let sql = "SELECT autok.kategoria, COUNT(DISTINCT autok.id) AS autoDb, COUNT(berlesek.id) AS berlesDb, SUM(DATEDIFF(berlesek.veg, berlesek.kezdet)) AS napDb, SUM(DATEDIFF(berlesek.veg, berlesek.kezdet) * autok.napidij) AS bevetel FROM autok LEFT JOIN berlesek ON autok.id = berlesek.auto_id GROUP BY autok.kategoria ORDER BY bevetel DESC;";
+        let sql = "SELECT DATE_FORMAT(berlesek.kezdet, '%Y-%m') AS honap, COUNT(berlesek.id) AS berlesDb, SUM((DATEDIFF(berlesek.veg, berlesek.kezdet) + 1) * autok.napidij ) AS bevetel FROM berlesek JOIN autok ON autok.id = berlesek.auto_id GROUP BY DATE_FORMAT(berlesek.kezdet, '%Y-%m') ORDER BY honap ASC;";
         const [eredmeny] = await db.query(sql);
         res.json(eredmeny);
     }

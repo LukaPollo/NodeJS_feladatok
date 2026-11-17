@@ -6,6 +6,7 @@ import ugyfelekRoute from "./routes/ugyfelek.js";
 import statisztikaRoute from "./routes/statisztika.js";
 
 const app = express();
+app.use(express.json());
 
 app.use("/munkalapok", munkalapokRoute);
 app.use("/alkatreszek", alkatreszekRoute);

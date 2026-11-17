@@ -4,7 +4,7 @@ import db from "../utils/db.js";
 const router = express.Router();
 
 router.get("/statuszok", async (req,res)=> {
-    let sql = "SELECT munkalapok.statusz, COUNT(munkalapok.statusz) FROM `munkalapok` GROUP BY munkalapok.statusz;";
+    let sql = "SELECT munkalapok.statusz, COUNT(munkalapok.statusz) AS db FROM `munkalapok` GROUP BY munkalapok.statusz;";
     const [eredmeny] = await db.query(sql);
     res.json(eredmeny);
 })
